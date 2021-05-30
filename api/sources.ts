@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { MongoClient } from "mongodb";
-import SourcesDAO from "../dao/SourcesDao";
-import Sources from "../types/Source";
+import SourcesDAO from "./dao/SourcesDao";
+import Sources from "./types/Source";
 
 async function establishDbConnection() {
     await MongoClient.connect(process.env.FINSCREEN_DB_URI, { useNewUrlParser: true })
