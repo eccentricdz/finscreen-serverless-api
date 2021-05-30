@@ -57,7 +57,10 @@ export default (request: VercelRequest, response: VercelResponse) => {
     establishDbConnection()
         .then(() => {
             SourcesDAO.getSources().then((sources) =>
-                response.status(200).json(sources)
+                response
+                    .status(200)
+                    .json(sources)
+                    .setHeader("Cache-Control", "s-maxage=2592000")
             );
         })
         .catch((error) => {
