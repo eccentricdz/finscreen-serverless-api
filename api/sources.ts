@@ -53,14 +53,16 @@ async function establishDbConnection() {
         });
 }
 
+const setCacheHeaders = (response: VercelResponse): VercelResponse => {
+    response.setHeader("Cache-Control", "s-maxage=2592000");
+    return response;
+};
+
 export default (request: VercelRequest, response: VercelResponse) => {
     establishDbConnection()
         .then(() => {
             SourcesDAO.getSources().then((sources) =>
-                response
-                    .status(200)
-                    .json(sources)
-                    .setHeader("Cache-Control", "s-maxage=2592000")
+                setCacheHeaders(response.status(200).json(sources))
             );
         })
         .catch((error) => {
