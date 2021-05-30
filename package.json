@@ -1,0 +1,22 @@
+{
+  "name": "finscreen-serveless-api",
+  "version": "1.0.0",
+  "description": "The serveless API's required to support the Finscreen app.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "serverless",
+    "finscreen",
+    "api"
+  ],
+  "author": "Rahul Agarwal",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/mongodb": "^3.6.16",
+    "@vercel/node": "^1.10.0"
+  },
+  "dependencies": {
+    "mongodb": "^3.6.8"
+  }
+}
