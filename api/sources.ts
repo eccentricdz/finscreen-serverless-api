@@ -62,7 +62,7 @@ export default (request: VercelRequest, response: VercelResponse) => {
     establishDbConnection()
         .then(() => {
             SourcesDAO.getSources().then((sources) =>
-                setCacheHeaders(response.status(200).json(sources))
+                setCacheHeaders(response).status(200).json(sources)
             );
         })
         .catch((error) => {
