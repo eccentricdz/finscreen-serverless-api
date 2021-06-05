@@ -53,11 +53,19 @@ async function establishDbConnection() {
         });
 }
 
+/**
+ * We need to create a new deployment everytime we add a new source to the DB
+ * This will make sure our cache is invalidated and our users get the latest
+ * set of sources.
+ */
 const setCacheHeaders = (response: VercelResponse): VercelResponse => {
     response.setHeader("Cache-Control", "s-maxage=2592000");
     return response;
 };
 
+/**
+ * The primary entry point for the API /api/sources
+ */
 export default (request: VercelRequest, response: VercelResponse) => {
     establishDbConnection()
         .then(() => {
