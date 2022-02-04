@@ -1,3 +1,5 @@
 .vercel
 node_modules
 sample_sources.json
+.env
+.idea
