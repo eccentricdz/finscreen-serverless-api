@@ -17,6 +17,8 @@
     "@vercel/node": "^1.10.0"
   },
   "dependencies": {
-    "mongodb": "^3.6.8"
+    "fast-xml-parser": "^3.19.0",
+    "mongodb": "^3.6.8",
+    "node-fetch": "^2.6.1"
   }
 }

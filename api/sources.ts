@@ -3,10 +3,10 @@ import { Collection, Cursor, Db, MongoClient } from "mongodb";
 import { ObjectId } from "bson";
 
 interface Source {
-    name: String;
-    url: String;
-    colorOne: String;
-    colorTwo: String;
+    name: string;
+    url: string;
+    colorOne: string;
+    colorTwo: string;
     _id: ObjectId;
 }
 
@@ -43,9 +43,12 @@ class SourcesDAO {
 async function establishDbConnection() {
     await MongoClient.connect(process.env.FINSCREEN_DB_URI, {
         useNewUrlParser: true,
+        useUnifiedTopology: true,
     })
         .catch((err) => {
-            console.error(err.stack);
+            console.error(
+                `Unable to connect to the MongoDB client: ${err.stack}`
+            );
             process.exit(1);
         })
         .then(async (client) => {
@@ -59,7 +62,7 @@ async function establishDbConnection() {
  * set of sources.
  */
 const setCacheHeaders = (response: VercelResponse): VercelResponse => {
-    response.setHeader("Cache-Control", "s-maxage=2592000");
+    response.setHeader("Cache-Control", "max-age=0, s-maxage=2592000");
     return response;
 };
 
