@@ -22,17 +22,17 @@ interface Source {
 interface Article {
     title: string;
     link: string;
-    imageUrl?: string;
-    author?: string;
-    description?: string;
+    image?: string;
+    description: string;
     pubDate: string;
+    category: string | string[];
 }
 
 let finscreenDB: Db;
 let sources: Collection<Source>;
 
 class ArticlesDAO {
-    static async getArticles(source: Source): Promise<any> {
+    static async getArticles(source: Source): Promise<Article[]> {
         try {
             const response = await fetch(source.url);
             if (!response.ok) {
@@ -44,7 +44,8 @@ class ArticlesDAO {
             const responseXML = await response.text();
 
             if (XMLParser.validate(responseXML) === true) {
-                return R.compose(extractArticles, XMLParser.parse)(responseXML)
+                console.log(XMLParser.parse(responseXML).rss.channel.item);
+                return R.compose(extractArticles, XMLParser.parse)(responseXML);
             } else {
                 throw new Error(`Error when trying to parse the XML response`);
             }
@@ -87,8 +88,8 @@ class SourceDAO {
 /**
  * Extracts a list of [Article] from the given Source JSON.
  */
-const extractArticles = R.compose(
-    R.project(["title", "link", "pubDate", "description"]),
+const extractArticles: (arg0: any) => Article[] = R.compose(
+    R.project(["title", "link", "pubDate", "description", "category", "image"]),
     R.pathOr([], ["rss", "channel", "item"])
 );
 
