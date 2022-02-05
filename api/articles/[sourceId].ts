@@ -1,9 +1,13 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { Collection, Cursor, Db, MongoClient } from "mongodb";
 import * as XMLParser from "fast-xml-parser";
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 import { ObjectId } from "bson";
+import * as R from "ramda";
 
+/**
+ * A model representing a source of articles.
+ */
 interface Source {
     name: string;
     url: string;
@@ -12,10 +16,16 @@ interface Source {
     _id: ObjectId;
 }
 
-interface Article { 
+/**
+ * A model representing an article from a source.
+ */
+interface Article {
     title: string;
     link: string;
-    date: string
+    imageUrl?: string;
+    author?: string;
+    description?: string;
+    pubDate: string;
 }
 
 let finscreenDB: Db;
@@ -32,11 +42,9 @@ class ArticlesDAO {
             }
 
             const responseXML = await response.text();
-            let responseJSON = {};
 
             if (XMLParser.validate(responseXML) === true) {
-                responseJSON = XMLParser.parse(responseXML);
-                return responseJSON;
+                return R.compose(extractArticles, XMLParser.parse)(responseXML)
             } else {
                 throw new Error(`Error when trying to parse the XML response`);
             }
@@ -75,6 +83,14 @@ class SourceDAO {
         }
     }
 }
+
+/**
+ * Extracts a list of [Article] from the given Source JSON.
+ */
+const extractArticles = R.compose(
+    R.project(["title", "link", "pubDate", "description"]),
+    R.pathOr([], ["rss", "channel", "item"])
+);
 
 async function establishDbConnection() {
     await MongoClient.connect(process.env.FINSCREEN_DB_URI, {
