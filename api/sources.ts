@@ -4,7 +4,8 @@ import { ObjectId } from "bson";
 
 interface Source {
     name: string;
-    url: string;
+    feedUrl: string;
+    website: string;
     colorOne: string;
     colorTwo: string;
     _id: ObjectId;
@@ -33,12 +34,25 @@ class SourcesDAO {
         let cursor: Cursor<Source>;
         try {
             cursor = await sources.find();
-            return cursor.toArray();
+
+            return cursor.toArray().then((sources) =>
+                sources.map((source) => {
+                    return {
+                        website: extractHostname(source.feedUrl),
+                        ...source,
+                    };
+                })
+            );
         } catch (e) {
             console.error(`Unable to find sources in the Collection: ${e}`);
         }
     }
 }
+
+const extractHostname = (url: string) => {
+    const { hostname } = new URL(url);
+    return hostname;
+};
 
 async function establishDbConnection() {
     await MongoClient.connect(process.env.FINSCREEN_DB_URI, {

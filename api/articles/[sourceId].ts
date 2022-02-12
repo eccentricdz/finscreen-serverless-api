@@ -10,7 +10,7 @@ import * as R from "ramda";
  */
 interface Source {
     name: string;
-    url: string;
+    feedUrl: string;
     colorOne: string;
     colorTwo: string;
     _id: ObjectId;
@@ -34,7 +34,7 @@ let sources: Collection<Source>;
 class ArticlesDAO {
     static async getArticles(source: Source): Promise<Article[]> {
         try {
-            const response = await fetch(source.url);
+            const response = await fetch(source.feedUrl);
             if (!response.ok) {
                 throw new Error(
                     `Network response was not ok: ${response.statusText}`
