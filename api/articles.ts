@@ -18,7 +18,8 @@ interface Article {
 class ArticlesDAO {
     static async getArticles(feedUrl?: string): Promise<Article[]> {
         try {
-            if (!feedUrl) throw new Error("No feedUrl present in the request body.");
+            if (!feedUrl)
+                throw new Error("No feedUrl present in the request body.");
             const response = await fetch(feedUrl);
             if (!response.ok) {
                 throw new Error(
@@ -65,6 +66,7 @@ const setCacheHeaders = (response: VercelResponse): VercelResponse => {
  */
 export default async (request: VercelRequest, response: VercelResponse) => {
     try {
+        console.log(request.body);
         const feedUrl = request.body?.feedUrl || undefined;
         const articles = await ArticlesDAO.getArticles(feedUrl);
         return setCacheHeaders(response).status(200).json(articles);
