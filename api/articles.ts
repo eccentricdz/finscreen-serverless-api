@@ -66,7 +66,7 @@ const setCacheHeaders = (response: VercelResponse): VercelResponse => {
  */
 export default async (request: VercelRequest, response: VercelResponse) => {
     try {
-        const feedUrl = JSON.parse(request.body)["feedUrl"] || undefined;
+        const feedUrl = request.body?.feedUrl || undefined;
         const articles = await ArticlesDAO.getArticles(feedUrl);
         return setCacheHeaders(response).status(200).json(articles);
     } catch (error) {
