@@ -1,20 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { Collection, Cursor, Db, MongoClient } from "mongodb";
 import * as XMLParser from "fast-xml-parser";
 import fetch from "node-fetch";
-import { ObjectId } from "bson";
 import * as R from "ramda";
-
-/**
- * A model representing a source of articles.
- */
-interface Source {
-    name: string;
-    feedUrl: string;
-    colorOne: string;
-    colorTwo: string;
-    _id: ObjectId;
-}
 
 /**
  * A model representing an article from a source.
@@ -28,12 +15,10 @@ interface Article {
     category: string | string[];
 }
 
-let finscreenDB: Db;
-let sources: Collection<Source>;
-
 class ArticlesDAO {
-    static async getArticles({feedUrl}): Promise<Article[]> {
+    static async getArticles(feedUrl?: string): Promise<Article[]> {
         try {
+            if (!feedUrl) throw new Error("No feedUrl present in the request body.");
             const response = await fetch(feedUrl);
             if (!response.ok) {
                 throw new Error(
@@ -57,33 +42,6 @@ class ArticlesDAO {
     }
 }
 
-class SourceDAO {
-    static async injectDB(client: MongoClient) {
-        try {
-            finscreenDB = await client.db(process.env.FINSREEN_DB_NS);
-            sources = await finscreenDB.collection("sources");
-        } catch (e) {
-            console.error(
-                `Unable to establish a collection handle in sourcesDAO: ${e}`
-            );
-        }
-    }
-
-    /**
-     * Get all the sources in the collection
-     * @returns Promise<Source[]>
-     */
-    static async getSource(id: ObjectId): Promise<Source[]> {
-        let cursor: Cursor<Source>;
-        try {
-            cursor = await sources.find({ _id: id });
-            return cursor.limit(1).toArray();
-        } catch (e) {
-            console.error(`Unable to find sources in the Collection: ${e}`);
-        }
-    }
-}
-
 /**
  * Extracts a list of [Article] from the given Source JSON.
  */
@@ -91,20 +49,6 @@ const extractArticles: (arg0: any) => Article[] = R.compose(
     R.project(["title", "link", "pubDate", "description", "category", "image"]),
     R.pathOr([], ["rss", "channel", "item"])
 );
-
-async function establishDbConnection() {
-    await MongoClient.connect(process.env.FINSCREEN_DB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-        .catch((err) => {
-            console.error(err.stack);
-            process.exit(1);
-        })
-        .then(async (client) => {
-            await SourceDAO.injectDB(client);
-        });
-}
 
 /**
  * We need to create a new deployment everytime we add a new source to the DB
@@ -121,14 +65,12 @@ const setCacheHeaders = (response: VercelResponse): VercelResponse => {
  */
 export default async (request: VercelRequest, response: VercelResponse) => {
     try {
-        const sourceId: string = request.query.sourceId as string;
-        await establishDbConnection();
-        const sources = await SourceDAO.getSource(new ObjectId(sourceId));
-        const articles = await ArticlesDAO.getArticles(sources[0]);
+        const feedUrl = request.body?.feedUrl || undefined;
+        const articles = await ArticlesDAO.getArticles(feedUrl);
         return setCacheHeaders(response).status(200).json(articles);
     } catch (error) {
         console.error(
-            `Unable to fetch the sources from the SourceDAO : ${error}`
+            `Unable to fetch the articles from the ArticlesDAO : ${error}`
         );
     }
 };
