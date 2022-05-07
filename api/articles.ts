@@ -75,6 +75,7 @@ export default async (request: VercelRequest, response: VercelResponse) => {
     try {
         const feedUrl = request.body?.feedUrl || undefined;
         const articles = await ArticlesDAO.getArticles(feedUrl);
+        console.log(`Articles requested for ${feedUrl}: ${JSON.stringify(articles)}`);
         return setCacheHeaders(response).status(200).json(articles);
     } catch (error) {
         console.error(
