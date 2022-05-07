@@ -44,9 +44,16 @@ class ArticlesDAO {
 }
 
 /**
+ * The extracted link could at times be an array, so we need to normalize it. 
+ */
+ const normalizeLinks = (link: Array<string> | string): string =>
+    Array.isArray(link) ? link[0] : link;
+
+/**
  * Extracts a list of [Article] from the given Source JSON.
  */
 const extractArticles: (arg0: any) => Article[] = R.compose(
+    R.forEach(R.over(R.lensProp<Article>("link"), normalizeLinks)),
     R.project(["title", "link", "pubDate", "description", "category", "image"]),
     R.pathOr([], ["rss", "channel", "item"])
 );
